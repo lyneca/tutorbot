@@ -17,7 +17,6 @@ headers = {
 WEBHOOK_URL = environ['WEBHOOK_URL']
 
 def send_message(data):
-    print("Sending message")
     requests.post(
         WEBHOOK_URL,
         json=data
