@@ -1,3 +1,5 @@
+from os import environ
+
 from flask import Flask, request
 from tutorbot import Bot
 import requests
@@ -6,13 +8,13 @@ app = Flask(__name__)
 
 bot = Bot()
 
-TOKEN = "xoxp-501495172338-501495173074-500910471329-2cd1130d6b6c2ec1af15db77371dcf53"
+SLACK_TOKEN = environ['SLACK_TOKEN']
 
 headers = {
-    "Authorization": "Bearer " + TOKEN
+    "Authorization": "Bearer " + SLACK_TOKEN
 }
 
-WEBHOOK_URL = "https://hooks.slack.com/services/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"
+WEBHOOK_URL = environ['WEBHOOK_URL']
 
 def send_message(data):
     print("Sending message")
