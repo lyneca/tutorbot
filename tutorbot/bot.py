@@ -1,12 +1,20 @@
-from flask import jsonify
+import random
 import re
 
+from flask import jsonify
+
+PING_MESSAGES = [
+    "Pong! I'm awake, I swear!",
+    "Pong! I wasn't asleep!",
+    "Pong... five more minutes please...",
+    "Pong... *hits snooze*",
+    "zzz... pong... zzz"
+]
 
 ERROR_COLOR = "warning"
 ERROR_MENTION_AT_START = ("Sorry, try @mentioning me at the start"
                           "of your message - e.g. @tutorbot help")
-ERROR_MENTION_UNKNOWN_COMMAND = ("Sorry, I don't know what you mean."
-                                 "Type `@tutorbot help` for help.")
+ERROR_MENTION_UNKNOWN_COMMAND = "Sorry, I didn't understand that command."
 
 
 class Bot:
@@ -19,7 +27,8 @@ class Bot:
 
     def __init__(self):
         self.mention_commands = {
-            'help': self.help
+            'help': self.help,
+            'ping': self.ping
         }
 
     def handle_event(self, event):
@@ -40,27 +49,29 @@ class Bot:
         return {
             "attachments": [
                 {
+                    "text": message,
                     "fallback": message,
-                    "color": ERROR_COLOR
+                    "color": ERROR_COLOR,
+                    "footer": "Type '@tutorbot help' for help.",
                 }
             ]
         }
 
     def get_help(self, command):
-        help_text = self.mention_commands[command].__doc__.split('\n')
+        help_text = self.mention_commands[command].__doc__.strip().split('\n')
         help_text = [x.strip() for x in help_text]
         usage = []
         for line in help_text:
             if line.startswith(":usage:"):
                 usage.append(line[7:])
-        return help_text, usage
+        return help_text[0], usage
 
     def get_help_field(self, command):
         text, _ = self.get_help(command)
         return {
             "title": command,
             "value": text,
-            "short": True
+            "short": False
         }
 
     def help(self, text, event):
@@ -83,11 +94,26 @@ class Bot:
                 }
             ]
         }
+    
+    def ping(self, text, event):
+        """
+        Ping the bot to wake it up if it's sleeping
+
+        Because tutorbot is running on a free-tier Heroku dyno, it goes to sleep
+        after a period of inactivity. Pinging the bot with this command will wake
+        it up again; although, any other command will do the same.
+        """
+
+        return {
+            "channel": event["channel"],
+            "text": random.choice(PING_MESSAGES),
+            "mrkdwn": False
+        }
 
     def mentioned(self, event):
         """Bot was @mentioned"""
         text = event['text']
-        if not re.match(r'^\s*<@\w+>', event['text']):
+        if not re.match(r"^\s*<@\w+>", event["text"]):
             return self.error(ERROR_MENTION_AT_START)
         first_word = text.split()[1]
         if first_word not in self.mention_commands:
