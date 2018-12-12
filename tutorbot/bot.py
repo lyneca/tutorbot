@@ -13,7 +13,7 @@ PING_MESSAGES = [
 
 ERROR_COLOR = "warning"
 ERROR_MENTION_AT_START = ("Sorry, try @mentioning me at the start"
-                          "of your message - e.g. @tutorbot help")
+                          "of your message - e.g. `@tutorbot help`.")
 ERROR_MENTION_UNKNOWN_COMMAND = "Sorry, I didn't understand that command."
 
 
@@ -63,7 +63,7 @@ class Bot:
         usage = []
         for line in help_text:
             if line.startswith(":usage:"):
-                usage.append(line[7:])
+                usage.append(line[7:].strip())
         help_text = [x for x in help_text if not x.startswith(":usage:")]
         return help_text, usage
 
@@ -79,31 +79,32 @@ class Bot:
         """
         List commands or show help on a specific command
 
-        :usage: `@tutorbot help`
-        :usage: `@tutorbot help [command]`
+        :usage: @tutorbot help
+        :usage: @tutorbot help [command]
         """
         if text:
             command = text[0]
             if command in self.mention_commands:
                 text, usage = self.get_help(command)
                 text = "\n".join(text)
+                fields = []
+                if usage:
+                    fields.append({"title": "Usage:"})
+                    fields += [
+                        {
+                            "value": f"`{x}`",
+                            "short": False
+                        } for x in usage
+                    ]
                 return {
                     "channel": event["channel"],
                     "attachments": [
                         {
                             "fallback": text + "\n\n" + "\n".join(usage),
-                            "pretext": f"Showing help for *@tutorbot {command}*",
+                            "pretext": f"Showing help for *@tutorbot {command}*:",
                             "text": text,
                             "color": "good",
-                            "fields": [
-                                {"title": "Usage"},
-                                *[
-                                    {
-                                        "value": x,
-                                        "short": False
-                                    } for x in usage
-                                ]
-                            ]
+                            "fields": fields
                         }
                     ]
                 }
@@ -130,6 +131,8 @@ class Bot:
         Because tutorbot is running on a free-tier Heroku dyno, it goes to sleep
         after a period of inactivity. Pinging the bot with this command will wake
         it up again; although, any other command will do the same.
+
+        :usage: @tutorbot ping
         """
 
         return {
