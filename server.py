@@ -12,11 +12,12 @@ headers = {
     "Authorization": "Bearer " + TOKEN
 }
 
+WEBHOOK_URL = "https://hooks.slack.com/services/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"
 
 def send_message(data):
     print("Sending message")
     requests.post(
-        "https://hooks.slack.com/services/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",
+        WEBHOOK_URL,
         json=data
     )
 
