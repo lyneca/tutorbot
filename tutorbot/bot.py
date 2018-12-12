@@ -29,7 +29,7 @@ class Bot:
             'reaction_added': self.reaction_added,
             'reaction_removed': self.reaction_removed,
         }
-        event_types[event['type']]()
+        return event_types[event['type']](event)
 
     def handle_command(self, request):
         """Handle an incoming Slack slash command"""
@@ -71,6 +71,8 @@ class Bot:
         :usage: `@tutorbot help [command]`
         """
         return {
+            "channel": event["channel"],
+            "text": "",
             "attachments": [
                 {
                     "fallback": '\n'.join(sorted(list(self.mention_commands.keys()))),
