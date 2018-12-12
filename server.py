@@ -40,3 +40,6 @@ def mention():
 def command():
     """Called when the bot is activated via Slash command"""
     ...
+
+if __name__ == '__main__':
+    app.run()
