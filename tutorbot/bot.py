@@ -64,23 +64,50 @@ class Bot:
         for line in help_text:
             if line.startswith(":usage:"):
                 usage.append(line[7:])
-        return help_text[0], usage
+        help_text = [x for x in help_text if not x.startswith(":usage:")]
+        return help_text, usage
 
     def get_help_field(self, command):
         text, _ = self.get_help(command)
         return {
             "title": command,
-            "value": text,
+            "value": text[0],
             "short": False
         }
 
     def help(self, text, event):
         """
-        Display a help message
+        List commands or show help on a specific command
 
         :usage: `@tutorbot help`
         :usage: `@tutorbot help [command]`
         """
+        if text:
+            command = text[0]
+            if command in self.mention_commands:
+                text, usage = self.get_help(command)
+                text = "\n".join(text)
+                return {
+                    "channel": event["channel"],
+                    "attachments": [
+                        {
+                            "fallback": text + "\n\n" + "\n".join(usage),
+                            "pretext": f"Showing help for *@tutorbot {command}*",
+                            "text": text,
+                            "color": "good",
+                            "fields": [
+                                {"title": "Usage"},
+                                *[
+                                    {
+                                        "value": x,
+                                        "short": False
+                                    } for x in usage
+                                ]
+                            ]
+                        }
+                    ]
+                }
+            return self.error(ERROR_MENTION_UNKNOWN_COMMAND)
         return {
             "channel": event["channel"],
             "text": "",
@@ -88,16 +115,17 @@ class Bot:
                 {
                     "fallback": '\n'.join(sorted(list(self.mention_commands.keys()))),
                     "pretext": "Available commands:",
+                    "color": "good",
                     "fields": [
                         self.get_help_field(command) for command in self.mention_commands
                     ]
                 }
             ]
         }
-    
+
     def ping(self, text, event):
         """
-        Ping the bot to wake it up if it's sleeping
+        Ping the bot to wake it up (if it's sleeping)
 
         Because tutorbot is running on a free-tier Heroku dyno, it goes to sleep
         after a period of inactivity. Pinging the bot with this command will wake
@@ -127,6 +155,7 @@ class Bot:
     def reaction_removed(self, event):
         """A reaction was removed from a message"""
         ...
+
 
 if __name__ == '__main__':
     bot = Bot()
