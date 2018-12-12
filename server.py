@@ -30,7 +30,7 @@ def mention():
     req_json = request.get_json()
     if 'challenge' in req_json:
         return req_json['challenge']
-    response = bot.handle_event(req_json)
+    response = bot.handle_event(req_json['event'])
     if response:
         send_message(response)
     return ""
