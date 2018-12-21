@@ -144,6 +144,7 @@ class Bot:
     def mentioned(self, event):
         """Bot was @mentioned"""
         text = event['text']
+        print(event)
         if not re.match(r"^\s*<@\w+>", event["text"]):
             return self.error(ERROR_MENTION_AT_START)
         first_word = text.split()[1]
