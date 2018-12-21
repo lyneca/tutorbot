@@ -28,7 +28,8 @@ class Bot:
     def __init__(self):
         self.mention_commands = {
             'help': self.help,
-            'ping': self.ping
+            'ping': self.ping,
+            'echo': self.echo
         }
 
     def handle_event(self, event):
@@ -141,6 +142,12 @@ class Bot:
             "mrkdwn": False
         }
 
+    def echo(self, text, event):
+        return {
+            "channel": event["channel"],
+            "text": text,
+        }
+
     def mentioned(self, event):
         """Bot was @mentioned"""
         text = event['text']
@@ -164,3 +171,4 @@ class Bot:
 if __name__ == '__main__':
     bot = Bot()
     print(bot.get_help('help'))
+
