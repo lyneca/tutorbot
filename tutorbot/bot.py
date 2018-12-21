@@ -145,7 +145,7 @@ class Bot:
     def echo(self, text, event):
         return {
             "channel": event["channel"],
-            "text": text,
+            "text": ' '.join(text),
         }
 
     def mentioned(self, event):
